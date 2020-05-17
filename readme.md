@@ -39,6 +39,11 @@ Let's go.
 
 - Can be included as class with `GEOSQLFACTORY_INCLUDED` constant.
 
+- The footprint of all the world database in single language is about 20 Mb.
+
+- Faster (16x) generation over another tools by using SQLite optimisations like transactions, 
+  [async](https://www.sqlite.org/faq.html#q19) and [WAL](https://www.sqlite.org/pragma.html#pragma_journal_mode).
+
 ## PHP sample `geoip-tiny.php`
 
 - Ready to use, dependency free, clean PHP class to work with prepared DB.
@@ -57,6 +62,9 @@ Let's go.
 3. Download `GeoLite2 Country: CSV Format` and unzip.
 
 
+# Nice To Have
+
+[_] Perform data format & SQLite index performance research like [this one](http://www.siafoo.net/article/53).
 
 # License
 

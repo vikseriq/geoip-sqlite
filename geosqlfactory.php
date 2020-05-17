@@ -100,17 +100,24 @@ class GeoSqlFactory
     {
         $this->dbo = new \SQLite3($path);
 
+        // set WAL journaling for faster writes, see https://www.sqlite.org/pragma.html#pragma_journal_mode
+        // it makes performance increase on 3x over DELETE and 2x over OFF
+        $this->dbo->exec('PRAGMA journal_mode=WAL;');
+        // disable transactions for faster inserts. May lead to DB corruption on script execution break.
+        // increase performance on 16x, see https://www.sqlite.org/faq.html#q19
+        $this->dbo->exec('PRAGMA synchronous=OFF;');
+
         // table for locations
         // *_name will filled with primary lang
         // locales_json contains json of all other names in various locales
-        $q = sprintf('DROP TABLE %1$s; CREATE TABLE %1$s (
+        $q = sprintf('CREATE TABLE IF NOT EXISTS %1$s (
             location_id INTEGER PRIMARY KEY,
             continent_code TEXT,
             continent_name TEXT,
             country_iso_code TEXT,
             country_name TEXT,
             locales_json TEXT
-        )', self::SQL_TABLE_LOCATIONS);
+        );', self::SQL_TABLE_LOCATIONS);
 
         $this->dbo->exec($q);
 
@@ -123,6 +130,11 @@ class GeoSqlFactory
         CREATE INDEX IF NOT EXISTS endidx ON %1$s(ip_end);
         ', self::SQL_TABLE_RANGES, self::SQL_TABLE_LOCATIONS);
 
+        $this->dbo->exec($q);
+
+        // cleanup tables
+        $q = sprintf('DELETE FROM %s; DELETE FROM %s',
+            self::SQL_TABLE_RANGES, self::SQL_TABLE_LOCATIONS);
         $this->dbo->exec($q);
     }
 
@@ -180,9 +192,9 @@ class GeoSqlFactory
                 +$line[1], $range[0], $range[1]
             );
 
-            // write to db
+            // transactional write to db
             if (count($sql_buffer) >= $sql_exec_every) {
-                $this->dbo->exec(implode(';', $sql_buffer));
+                $this->dbo->exec('BEGIN;'.implode(';', $sql_buffer).';COMMIT;');
                 $sql_buffer = [];
             }
         }
@@ -190,7 +202,7 @@ class GeoSqlFactory
 
         // flush the rest
         if (count($sql_buffer)) {
-            $this->dbo->exec(implode(';', $sql_buffer));
+            $this->dbo->exec('BEGIN;'.implode(';', $sql_buffer).';COMMIT;');
         }
         // that's all folks
         $this->dbo->close();
@@ -257,6 +269,8 @@ class GeoSqlFactory
         if (empty($this->dbo)) {
             throw new \Exception('Setup a SQLite DB via `prepareDb` method.');
         }
+        // start transaction
+        $this->dbo->exec('BEGIN;');
         foreach ($this->geonameTextMap as $geonameId => $geonameInfo) {
             // transform locales_json into json string
             $geonameInfo['locales_json'] = json_encode($geonameInfo['locales_json'], JSON_UNESCAPED_UNICODE);
@@ -273,6 +287,8 @@ class GeoSqlFactory
             // exec
             $this->dbo->exec($q);
         }
+        // commit
+        $this->dbo->exec('COMMIT;');
     }
 
     /**
