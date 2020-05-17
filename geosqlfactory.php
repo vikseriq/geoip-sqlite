@@ -115,13 +115,12 @@ class GeoSqlFactory
         $this->dbo->exec($q);
 
         // table for ranges with reference and index
-        $q = sprintf('DROP TABLE %1$s; CREATE TABLE %1$s (
-            idx INTEGER,
+        $q = sprintf('CREATE TABLE IF NOT EXISTS %1$s (
             ip_start NUMERIC UNIQUE,
             ip_end NUMERIC UNIQUE,
             location_id INTEGER REFERENCES %2$s(location_id)
         );
-        CREATE INDEX geoidx ON %1$s(idx);
+        CREATE INDEX IF NOT EXISTS endidx ON %1$s(ip_end);
         ', self::SQL_TABLE_RANGES, self::SQL_TABLE_LOCATIONS);
 
         $this->dbo->exec($q);
@@ -173,14 +172,12 @@ class GeoSqlFactory
             // counters
             $this->ipRangeCounter++;
             $this->ipTotalCoverage += $range[1] - $range[0];
-            // index clustering by 2^16 addresses
-            $idx = $range[1] - $range[1] % 65536;
 
             // prepare statement
-            $sql_buffer[] = sprintf('INSERT INTO %s (location_id, ip_start, ip_end, idx)
-            VALUES (%s, %s, %s, %s)',
+            $sql_buffer[] = sprintf('INSERT INTO %s (location_id, ip_start, ip_end)
+            VALUES (%s, %s, %s)',
                 self::SQL_TABLE_RANGES,
-                +$line[1], $range[0], $range[1], $idx
+                +$line[1], $range[0], $range[1]
             );
 
             // write to db
