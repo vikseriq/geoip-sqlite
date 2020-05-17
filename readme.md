@@ -61,6 +61,21 @@ Let's go.
 
 3. Download `GeoLite2 Country: CSV Format` and unzip.
 
+# Converting
+
+Run `geosqlfactory` from PHP CLI:
+
+```shell script
+php geosqlfactory.php --country=LT,LV,EE --language=en,ru --db=baltic.sqlite --source=./GeoLite2-Country-CSV
+```
+
+| CLI param   | Default          | Example | Description |
+| ----------- | ---------------- | ------- | ----------- |
+| db          | geoip.sqlite     | /tmp/dach.db | Path to the SQLite database to store the data. |
+| source      | ./GeoLite2-Country-CSV | ~/GeoIp2 | Path to the extracted MaxMind GeoIp CSV files. |
+| language    | en               | de,en,fr   | Codes of languages that used as filename part of Locations-<lang>.csv files. |
+| country     | <all countries>  | DE,AT,CH   | ISO codes of countries to be picked in to database. |
+| region      | <all continents> | EU         | ISO codes of regions (continents in terms of MaxMind) to pick. |
 
 # Nice To Have
 

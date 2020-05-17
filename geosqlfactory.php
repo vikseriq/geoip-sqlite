@@ -77,15 +77,11 @@ class GeoSqlFactory
 
     function setRegions($isoCodes)
     {
-        if (!is_array($isoCodes))
-            $isoCodes = [$isoCodes];
         $this->regions = $isoCodes;
     }
 
     function setCountries($isoCodes)
     {
-        if (!is_array($isoCodes))
-            $isoCodes = [$isoCodes];
         $this->countries = $isoCodes;
     }
 
@@ -319,13 +315,37 @@ if (!defined('GEOSQLFACTORY_INCLUDED')) {
     if (php_sapi_name() === 'cli') {
         set_time_limit(5 * 60);
         $startedAt = microtime(true);
-        printf("Started at %s\nProcessing ", date('H:i:s', $startedAt));
+        printf("Started at %s\nProcessing\t", date('H:i:s', $startedAt));
 
-        // TODO: parse params from getopt
-        $fabric = new GeoSqlFactory(__DIR__ . '/GeoLite2-Country-CSV/');
-        $fabric->setLanguages(['en', 'ru']);
-        $fabric->setCountries(['RU', 'BY', 'KZ']);
-        $fabric->prepareDb(__DIR__ . '/geoip.sqlite');
+        // get cli options
+        $options = getopt('', [
+            'db::',
+            'source::',
+            'language::',
+            'country::',
+            'region::'
+        ]);
+        // merge with defaults
+        $options = array_merge([
+            'db' => './geoip.sqlite',
+            'source' => './GeoLite2-Country-CSV/',
+            'language' => 'en',
+            'country' => '',
+            'region' => '',
+        ], $options);
+
+        // setup
+        $fabric = new \vikseriq\GeoipSqlite\GeoSqlFactory($options['source']);
+        if (!empty($options['country'])) {
+            $fabric->setCountries(explode(',', $options['country']));
+        }
+        if (!empty($options['region'])) {
+            $fabric->setRegions(explode(',', $options['region']));
+        }
+
+        $fabric->setLanguages(explode(',', $options['language']));
+        $fabric->prepareDb($options['db']);
+        // perform
         $fabric->fillGeonames();
         $fabric->fillBlocks();
 
