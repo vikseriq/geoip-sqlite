@@ -27,15 +27,17 @@ Let's go.
 
 # Features
 
-## Database generator `make-geosqlite.php`
+## Database generator [geosqlfactory.php](geosqlfactory.php)
 
 - Converts GeoLite2 Countries CSV into SQLite database.
 
-- Allow to include/exclude specific list of countries/regions.
+- Allow to set a limited list of countries/regions.
 
-- Support both mono and polylang tables.
+- Save multi locale names in json form.
 
 - Requires only PHP 5.6+ CLI with SQLite3 extension.
+
+- Can be included as class with `GEOSQLFACTORY_INCLUDED` constant.
 
 ## PHP sample `geoip-tiny.php`
 
