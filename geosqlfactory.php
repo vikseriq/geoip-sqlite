@@ -2,9 +2,17 @@
 /**
  * Convert MaxMind GeoLite2 CSV to SQLite tables
  *
- * To use GeoSqlFactory class in external code define GEOSQLFACTORY_INCLUDED
+ * Usage modes:
+ * - standalone cli.
+ *      Pass options from cli. See readme.md for instructions.
+ * - common class.
+ *      To use as class just define GEOSQLFACTORY_INCLUDED before file inclusion.
  *
  * Inspired by https://www.splitbrain.org/blog/2011-02/12-maxmind_geoip_db_and_sqlite
+ *
+ * @author vikseriq
+ * @link https://github.com/vikseriq/geoip-sqlite
+ * @license MIT
  */
 
 namespace vikseriq\GeoipSqlite;
@@ -190,7 +198,7 @@ class GeoSqlFactory
 
             // transactional write to db
             if (count($sql_buffer) >= $sql_exec_every) {
-                $this->dbo->exec('BEGIN;'.implode(';', $sql_buffer).';COMMIT;');
+                $this->dbo->exec('BEGIN;' . implode(';', $sql_buffer) . ';COMMIT;');
                 $sql_buffer = [];
             }
         }
@@ -198,7 +206,7 @@ class GeoSqlFactory
 
         // flush the rest
         if (count($sql_buffer)) {
-            $this->dbo->exec('BEGIN;'.implode(';', $sql_buffer).';COMMIT;');
+            $this->dbo->exec('BEGIN;' . implode(';', $sql_buffer) . ';COMMIT;');
         }
         // that's all folks
         $this->dbo->close();

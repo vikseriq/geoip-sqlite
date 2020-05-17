@@ -1,4 +1,6 @@
-# Dependency free GeoIP database inside SQLite with PHP converter and sample
+# GeoIP SQLite database generator & client
+
+Dependency free GeoIP database inside SQLite with PHP converter and tiny client.
 
 ## Motivation
 
@@ -25,6 +27,28 @@ Anyway, making a pure SQLite DB with IP ranges might also be useful in mobile ap
 
 Let's go.
 
+# Quickstart
+
+## Prepare data - DIY
+1. Prepare raw data – download CSV files from MaxMind and extract.
+
+2. Generate database - `php geosqlfactory.php --db=world-ip.sqlite`.
+
+## Ready to use databases
+
+Currently unavaliable. 
+I'm not sure is MaxMind allows to re-distribute free compilations over their databases, will look later.
+
+## Use
+In your code: include lib, provide path to db and resolve.
+
+```php
+include_once 'geoiptiny.php';
+$ipResolver = new \vikseriq\GeoipSqlite\GeoipTiny('world-ip.sqlite');
+echo $ipResolver->getCountry($_SERVER['REMOTE_ADDR']);
+```
+
+
 # Features
 
 ## Database generator [geosqlfactory.php](geosqlfactory.php)
@@ -44,18 +68,24 @@ Let's go.
 - Faster (16x) generation over another tools by using SQLite optimisations like transactions, 
   [async](https://www.sqlite.org/faq.html#q19) and [WAL](https://www.sqlite.org/pragma.html#pragma_journal_mode).
 
-## PHP sample `geoip-tiny.php`
+## PHP client `geoiptiny.php`
 
-- Ready to use, dependency free, clean PHP class to work with prepared DB.
+- Ready to use, dependency free, clean PHP class to work with the prepared DB.
 
 - Lookup an IP details in SQLite3 database.
 
 - Requires only PHP 5.6+ with SQLite3 extension, which presented almost on every UNIX instance and shared hostings.
 
+## Tests `tests-geoip.php`
+
+- Sample usage with resolver & localization testing.
+
+- Before running tests create sample database: see the comments.
+
 
 # Preparing raw data
 
-1. Signup free account on [MaxMind](https://maxmind.com)
+1. Sign up on free account at [MaxMind](https://maxmind.com)
 
 2. Navigate to Account - GeoLite2 - Download files.
 
@@ -74,8 +104,16 @@ php geosqlfactory.php --country=LT,LV,EE --language=en,ru --db=baltic.sqlite --s
 | db          | geoip.sqlite     | /tmp/dach.db | Path to the SQLite database to store the data. |
 | source      | ./GeoLite2-Country-CSV | ~/GeoIp2 | Path to the extracted MaxMind GeoIp CSV files. |
 | language    | en               | de,en,fr   | Codes of languages that used as filename part of Locations-<lang>.csv files. |
-| country     | <all countries>  | DE,AT,CH   | ISO codes of countries to be picked in to database. |
-| region      | <all continents> | EU         | ISO codes of regions (continents in terms of MaxMind) to pick. |
+| country     | *all countries*  | DE,AT,CH   | ISO codes of countries to be picked in to database. |
+| region      | *all continents* | EU         | ISO codes of regions (continents in terms of MaxMind) to pick. |
+
+# Running tests
+
+Prepare sample database and run tests:
+
+```bash
+php tests-geoip.php
+```
 
 # Nice To Have
 
